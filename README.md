@@ -66,46 +66,24 @@ senza questa conferma.
 
 ## Creare l'app Shopify (se non ce l'hai)
 
-Lo script usa OAuth: ti serve un'app con `CLIENT_ID` e `CLIENT_SECRET` da
-configurare su entrambi gli store (source e target). Puoi crearla in due modi.
-
-### Opzione A — Custom app per singolo store (più semplice)
-
-Ripeti per **ciascuno** dei due store:
-
-1. Vai su **[https://admin.shopify.com](https://admin.shopify.com)** → seleziona
-   lo store → **Settings → Apps and sales channels → Develop apps**.
-2. Clicca **Create an app**, dai un nome (es. `shopify-cloner`).
-3. Vai in **Configuration → Admin API integration** e abilita tutti gli scope
-   elencati sotto.
-4. Ancora in **Configuration**, aggiungi `http://localhost:3000/callback` agli
-   **Allowed redirection URLs** e salva.
-5. Vai in **API credentials** e copia **API key** (`CLIENT_ID`) e
-   **API secret key** (`CLIENT_SECRET`).
-6. Clicca **Install app** per installarla sullo store.
-
-> Le credenziali (API key e secret) sono le **stesse** per entrambi gli store
-> se usi lo stesso account admin. Se i due store sono su account diversi, crea
-> l'app su ognuno separatamente e usa le credenziali di uno qualsiasi dei due
-> (purché l'app sia installata su entrambi con lo stesso redirect URL).
-
-### Opzione B — App da Shopify Developer Dashboard (per più store)
-
-Se gestisci più store o vuoi un'app riutilizzabile:
+Lo script usa OAuth: ti serve un'app con `CLIENT_ID` e `CLIENT_SECRET`.
+La si crea dalla **Shopify Dev Dashboard** — le custom app legacy nell'admin
+sono deprecate e Shopify rimanda ora a questo ambiente.
 
 1. Vai su **[https://dev.shopify.com/dashboard/](https://dev.shopify.com/dashboard/)**
-   e accedi con il tuo account Shopify Partners.
-2. Clicca **Create app** → scegli **Custom app** o **Public app** → dai un nome.
-3. In **App setup**, sezione **URLs**, imposta:
+   e accedi con il tuo account Shopify.
+2. Clicca **Create app**, dai un nome (es. `shopify-cloner`).
+3. In **Configuration → URLs** imposta:
    - **App URL**: `http://localhost:3000`
    - **Allowed redirection URLs**: `http://localhost:3000/callback`
-4. Salva. Copia **Client ID** e **Client secret** dalla stessa pagina.
-5. Distribuisci l'app su entrambi gli store: dal menu dell'app →
-   **Test on development store** (o installa tramite link di installazione).
+4. In **Configuration → Admin API scopes** abilita tutti gli scope elencati
+   sotto (read **e** write per ciascuno).
+5. Salva. Vai in **API credentials** e copia **Client ID** (`CLIENT_ID`) e
+   **Client secret** (`CLIENT_SECRET`).
+6. Installa l'app su **entrambi** gli store (source e target): dal menu
+   dell'app → **Install app** → seleziona lo store.
 
 ### Scope richiesti
-
-Entrambe le opzioni richiedono gli stessi scope (read **e** write):
 
 ```
 products, content, metaobjects, metaobject_definitions,
@@ -115,12 +93,67 @@ locales, script_tags, shipping, customers, orders
 
 ## Clonare il tema
 
-Il tema non viene clonato dagli script. Dalla cartella del tema originale, con
-la Shopify CLI:
+Il tema non viene clonato dagli script: va copiato a parte con la
+**Shopify CLI**. La procedura completa è:
+
+### 1. Installa la Shopify CLI (se non ce l'hai)
 
 ```bash
-shopify theme push --store devstore.myshopify.com --unpublished --theme "Staging clone"
+# macOS
+brew tap shopify/shopify
+brew install shopify-cli
+
+# oppure con npm (multipiattaforma)
+npm install -g @shopify/cli @shopify/theme
 ```
+
+Verifica:
+
+```bash
+shopify version
+```
+
+### 2. Copia il tema con `make theme`
+
+Usa il comando Make incluso nel progetto: scarica automaticamente il tema dallo
+store sorgente in una cartella temporanea, lo carica sul dev store e poi pulisce.
+
+```
+$ make theme
+
+  Origine:      store-originale.myshopify.com
+  Destinazione: mio-devstore.myshopify.com
+
+  Pubblicare subito come tema attivo? (s/n) [n]: n
+
+  [1/2] Scegli il tema da copiare da store-originale.myshopify.com:
+
+  # la CLI mostra la lista dei temi sorgente → selezioni con le frecce
+
+  [2/2] Scegli il tema di destinazione su mio-devstore.myshopify.com
+        (selezionane uno esistente oppure crea nuovo):
+
+  # la CLI mostra la lista dei temi del dev store → selezioni o crei nuovo
+
+  Tema copiato.
+```
+
+- **[1/2] Tema sorgente** — la Shopify CLI elenca tutti i temi dello store
+  di origine (attivo, bozze, archiviati); selezioni con le frecce.
+- **[2/2] Tema destinazione** — la CLI elenca i temi del dev store e offre
+  anche l'opzione per creare un tema nuovo. Il flag `--theme "Nome"` non viene
+  usato perché funziona solo su temi già esistenti e darebbe errore se il tema
+  non c'è ancora.
+- **Pubblicare subito** — `s` lo carica come tema attivo; `n` (default) lo
+  carica come bozza non pubblicata.
+
+La Shopify CLI aprirà il browser per autenticarti sullo store sorgente e poi su
+quello di destinazione al primo utilizzo.
+
+### 3. (Opzionale) Pubblica il tema in un secondo momento
+
+Dall'admin del dev store: **Online Store → Themes → trova il tema →
+Actions → Publish**.
 
 ## Cose da fare a mano dopo la clonazione
 
