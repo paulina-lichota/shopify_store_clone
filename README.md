@@ -61,16 +61,57 @@ senza questa conferma.
 ## Prerequisiti
 
 - **Python 3** e **make** (le dipendenze le gestisce `make` in un venv).
-- **Un'app** nel [Shopify Partners Dashboard](https://partners.shopify.com),
-  installata su **entrambi** gli store, con:
-  - Il **Redirect URL** `http://localhost:3000/callback` nelle *Allowed
-    redirection URLs*.
-  - Gli scope: `read/write_products`, `read/write_content`,
-    `read/write_metaobjects`, `read/write_metaobject_definitions`,
-    `read/write_online_store_pages`, `read/write_themes`, `read/write_files`,
-    `read/write_inventory`, `read/write_translations`, `read/write_locales`,
-    `read/write_script_tags`, `read/write_shipping`, `read/write_customers`,
-    `read/write_orders`.
+- **Un'app Shopify** installata su **entrambi** gli store — vedi la sezione
+  successiva se non l'hai ancora creata.
+
+## Creare l'app Shopify (se non ce l'hai)
+
+Lo script usa OAuth: ti serve un'app con `CLIENT_ID` e `CLIENT_SECRET` da
+configurare su entrambi gli store (source e target). Puoi crearla in due modi.
+
+### Opzione A — Custom app per singolo store (più semplice)
+
+Ripeti per **ciascuno** dei due store:
+
+1. Vai su **[https://admin.shopify.com](https://admin.shopify.com)** → seleziona
+   lo store → **Settings → Apps and sales channels → Develop apps**.
+2. Clicca **Create an app**, dai un nome (es. `shopify-cloner`).
+3. Vai in **Configuration → Admin API integration** e abilita tutti gli scope
+   elencati sotto.
+4. Ancora in **Configuration**, aggiungi `http://localhost:3000/callback` agli
+   **Allowed redirection URLs** e salva.
+5. Vai in **API credentials** e copia **API key** (`CLIENT_ID`) e
+   **API secret key** (`CLIENT_SECRET`).
+6. Clicca **Install app** per installarla sullo store.
+
+> Le credenziali (API key e secret) sono le **stesse** per entrambi gli store
+> se usi lo stesso account admin. Se i due store sono su account diversi, crea
+> l'app su ognuno separatamente e usa le credenziali di uno qualsiasi dei due
+> (purché l'app sia installata su entrambi con lo stesso redirect URL).
+
+### Opzione B — App da Shopify Developer Dashboard (per più store)
+
+Se gestisci più store o vuoi un'app riutilizzabile:
+
+1. Vai su **[https://dev.shopify.com/dashboard/](https://dev.shopify.com/dashboard/)**
+   e accedi con il tuo account Shopify Partners.
+2. Clicca **Create app** → scegli **Custom app** o **Public app** → dai un nome.
+3. In **App setup**, sezione **URLs**, imposta:
+   - **App URL**: `http://localhost:3000`
+   - **Allowed redirection URLs**: `http://localhost:3000/callback`
+4. Salva. Copia **Client ID** e **Client secret** dalla stessa pagina.
+5. Distribuisci l'app su entrambi gli store: dal menu dell'app →
+   **Test on development store** (o installa tramite link di installazione).
+
+### Scope richiesti
+
+Entrambe le opzioni richiedono gli stessi scope (read **e** write):
+
+```
+products, content, metaobjects, metaobject_definitions,
+online_store_pages, themes, files, inventory, translations,
+locales, script_tags, shipping, customers, orders
+```
 
 ## Clonare il tema
 
