@@ -1,0 +1,9 @@
+# Credenziali — MAI committare
+shopify_secrets.json
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
